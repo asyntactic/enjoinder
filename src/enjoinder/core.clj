@@ -49,7 +49,7 @@
            ~(str rel1 " instance exists"))
        (is (not (nil? o2#))
            ~(str rel2 " instance exists"))
-       (is (= id2# (get-in o1# [~(keyword rel2) 0 :id]))
+       (is (some #(= (:id %) id2#) (get o1# ~(keyword rel2)))
            ~(str rel2 " instance in " rel1))
        (is (= id1# (get-in o2# [~(keyword rel1) :id]))
            ~(str rel1 " instance in " rel2)))))
