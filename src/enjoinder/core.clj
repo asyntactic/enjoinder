@@ -41,13 +41,17 @@
                               (where {:id id1#})
                               (with-object ~rel2
                                 (order :id))))
-           o23 (first (select ~rel2
+           o2# (first (select ~rel2
                               (where {:id id2#})
                               (with-object ~rel1
                                 (order :id))))]
-       (is (= id2# (get-in o1 [~(keyword rel2) 0 :id]))
+       (is (not (nil? o1#))
+           ~(str rel1 " instance exists"))
+       (is (not (nil? o2#))
+           ~(str rel2 " instance exists"))
+       (is (= id2# (get-in o1# [~(keyword rel2) 0 :id]))
            ~(str rel2 " instance in " rel1))
-       (is (= id1# (get-in o2 [~(keyword rel1) :id]))
+       (is (= id1# (get-in o2# [~(keyword rel1) :id]))
            ~(str rel1 " instance in " rel2)))))
 
 (defn response-session-cookie [res]
