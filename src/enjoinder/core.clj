@@ -55,9 +55,8 @@
            ~(str rel1 " instance in " rel2)))))
 
 (defn response-session-cookie [res]
-  (nth (re-matches #"^(.*);Path=/$" 
-                   (first (get-in res [:headers "Set-Cookie"])))
-       1))
+  (if-let [cookie (first (get-in res [:headers "Set-Cookie"]))]
+    (first (re-matches #"^(.*);Path=/$" cookie))))
 
 (defn wrap-logged-on-user [app username password]
   (let [auth (app (-> (request :post "/login")
@@ -66,4 +65,11 @@
         cookie (response-session-cookie auth)]
     (fn [req]
       (header req "cookie" cookie))))
+
+(defn logged-on-user-request [app username password req]
+  (let [auth (app (-> (request :post "/login")
+                      (body {:username username
+                             :password password})))
+        cookie (response-session-cookie auth)]
+    (header req "cookie" cookie)))
 
