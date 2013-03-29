@@ -1,5 +1,8 @@
 (ns enjoinder.core
   (:use [clojure.test]
+        [clojure.pprint :only [pprint]]
+        [clojure.set :only [difference]]
+        [clojure.walk :only [postwalk]]
         [korma.incubator.core :only [select where fields insert delete
                                      values sql-only with-object
                                      order]]
@@ -96,3 +99,19 @@
         cookie (response-session-cookie auth)]
     (header req "cookie" cookie)))
 
+
+(defn dissoc-ids
+  "Remove id fields."
+  [x]
+  (let [ids (filter #(re-matches #"^id$|^.*:id$|^.*_id$" (str %))
+                    (keys x))]
+    (apply dissoc x ids)))
+
+(defn dissoc-all-ids
+  "Walk a data structure, removing id fields from maps."
+  [x]
+  (postwalk #(if (map? %) (dissoc-ids %) %) x))
+
+(defn mapdiff [a b]
+  (pprint
+   (difference (set a) (set b))))
