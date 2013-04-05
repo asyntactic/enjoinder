@@ -57,6 +57,29 @@
        (is (= id1# (get-in o2# [~(keyword rel1) :id]))
            ~(str rel1 " instance in " rel2)))))
 
+(defmacro many-many-relation-test [name
+                                  rel1 id-exp1
+                                  rel2 id-exp2]
+  `(deftest ~name
+     (let [id1# ~id-exp1
+           id2# ~id-exp2
+           o1# (first (select ~rel1
+                              (where {:id id1#})
+                              (with-object ~rel2
+                                (order :id))))
+           o2# (first (select ~rel2
+                              (where {:id id2#})
+                              (with-object ~rel1
+                                (order :id))))]
+       (is (not (nil? o1#))
+           ~(str rel1 " instance exists"))
+       (is (not (nil? o2#))
+           ~(str rel2 " instance exists"))
+       (is (some #(= (:id %) id2#) (get o1# ~(keyword rel2)))
+           ~(str rel2 " instance in " rel1))
+       (is (some #(= (:id %) id1#) (get o2# ~(keyword rel1)))
+           ~(str rel1 " instance in " rel2)))))
+
 (defn response-session-cookie [res]
   (if-let [cookie (first (get-in res [:headers "Set-Cookie"]))]
     (first (re-matches #"^(.*);Path=/$" cookie))))
