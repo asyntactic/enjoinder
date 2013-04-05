@@ -1,7 +1,7 @@
 (ns enjoinder.core
   (:use [clojure.test]
         [clojure.pprint :only [pprint]]
-        [clojure.set :only [difference]]
+        [clojure.set :only [difference subset?]]
         [clojure.walk :only [postwalk]]
         [korma.incubator.core :only [select where fields insert delete
                                      values sql-only with-object
@@ -92,3 +92,51 @@
 (defn mapdiff [a b]
   (pprint
    (difference (set a) (set b))))
+
+(defn contains-structure?
+  "Returns true when structure is contained in coll, in the sense that
+  structure is like a skeleton whose parts are all contained in
+  coll. In that case, every key of structure is contained in coll,
+  every val in structure that is not a collection is equal to the
+  corresponding val in coll, and for every val s of structure that is
+  a collection, the corresponding val c in coll is a collection for
+  which (contains-structure c s) is true. Otherwise, returns false."
+  [coll structure]
+
+  (cond (sequential? structure)
+        (and
+         ;; every non-collection in structure is in coll
+         (every? (set coll) (filter (complement coll?) structure))
+         ;; every collection in structure is contains-structure?
+         ;;   for some collection in coll
+         (every? (fn [s] 
+                   (some (fn [c] (contains-structure? c s))
+                         (filter coll? coll)))
+
+                 (filter coll? structure)))
+
+
+        (associative? structure)
+        (let [scalar-set ;; set of scalar map entries
+              (fn [m]
+                (set (select-keys m
+                                  (keys (filter #((complement coll?)
+                                                  (val %))
+                                                m)))))
+              non-scalar-set ;; set of collection map entries
+              (fn [m]
+                (set (select-keys m (keys (filter #(coll? (val %))
+                                                  m)))))
+              
+              
+              s-structure (scalar-set structure)
+              ns-structure (non-scalar-set structure)
+              ns-coll (non-scalar-set coll)]
+          (and (subset? s-structure (set coll))
+               (every? (fn [s] 
+                         (some (fn [c] (contains-structure? (val c)
+                                                            (val s)))
+                               ns-coll))
+                       ns-structure))
+          )
+        ))
