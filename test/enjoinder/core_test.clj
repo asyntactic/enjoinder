@@ -59,4 +59,15 @@
               {:foo 1
                :bar {:a 2
                      :b [4 {:x :absent}]}
-               :baz 7})))))
+               :baz 7})))
+
+    (is (contains-structure?
+         [{:foo :bar
+           :stuff [{:baz :quux}]}]
+         [{:stuff [{:baz :quux}]}]))
+
+    (is (not (contains-structure?
+              [{:foo :bar
+                :stuff [{:baz :quux}]}]
+              [{:baz :quux}])))
+))

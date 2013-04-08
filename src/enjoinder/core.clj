@@ -135,7 +135,7 @@
          (every? (fn [s] 
                    (some (fn [c] (contains-structure? c s))
                          (filter coll? coll)))
-
+                 
                  (filter coll? structure)))
 
 
