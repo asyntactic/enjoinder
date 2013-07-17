@@ -92,7 +92,7 @@
     (fn [req]
       (header req "cookie" cookie))))
 
-(defn logged-on-user-request [app username password req]
+(defn logged-on-user-request [req app username password]
   (let [auth (app (-> (request :post "/login")
                       (body {:username username
                              :password password})))
